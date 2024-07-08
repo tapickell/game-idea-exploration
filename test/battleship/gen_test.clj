@@ -12,8 +12,8 @@
 
 (deftest starter-field-gen-test
   (testing "That is returns a field"
-    (let [f 2r0000000000]
-      (is (= f
+    (let [f 0N]
+      (is (not= f
              (starter-field-gen gen/ships f))))))
 
 (deftest place-ship-test

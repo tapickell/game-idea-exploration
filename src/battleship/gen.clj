@@ -28,61 +28,31 @@
 ;;  coords increase on the column index 1,2,3
 (def ships [{:len 5 :n 1} {:len 4 :n 1} {:len 3 :n 1} {:len 3 :n 2} {:len 2 :n 1}])
 
-;; could do a idx-inc to make it work w/ vert and horiz
+(defn field-has-space? [idx-inc]
+  (fn [field ship index]
+    (let [length (:len ship)
+          next (+ index idx-inc 1)
+          indexes (vec (range next (+ next (* idx-inc (- length 1)))))]
+      (every? (fn [i] (= \0 (get (inNout/base2str field) i))) indexes))))
+
+((field-has-space? 10) 0N {:len 4} 59)
+((field-has-space? 10) 0N {:len 4} 60)
+
 (defn field-has-vert-space? [field ship index]
-  (let [length (:len ship)
-        next (+ index 10 1)
-        indexes (vec (range next (+ next (* 10 (- length 1)))))]
-    (every? (fn [i] (= \0 (get (inNout/base2str field) i))) indexes)))
+  ((field-has-space? 10) field ship index))
 
-(let [field 0N
-      field-str (inNout/base2str field)
-      index 78
-      length 4
-      next (+ 10 index)
-      indexes (vec (take (- length 1) (range next 1000 10)))]
-  (mapv (fn [i] (= \0 (get field-str i))) indexes))
-
-;; => [68 78 88]
-;; => [22 32 42]
-;; => [10 20 30]
-
-(let [field 0N
-      index 0
-      length 4
-      indexes (vec (take (- length 1) (range (+ 10 index) 100 10)))]
-  indexes)
-;; => [10 20 30]
-
-;; for horizontal only (+ index length)
-(let [field 0N
-      index 0
-      length 4
-      indexes (vec (take (- length 1) (range (+ 1 index) 1000)))]
-  indexes)
-;; => [1 2 3]
-
-(field-has-vert-space? 0N {:len 2} 0)
-;; => true
-(field-has-vert-space? 0N {:len 2} 79)
-;; => true
-(field-has-vert-space? 0N {:len 2} 80)
-;; => false
-(field-has-vert-space? 0N {:len 2} 90)
-;; => false
-
-;; check the rest of ships indexes after head against the field
-(let [l 3 i 0 indexes [1 2]])
-(let [l 4 i 42 indexes [43 44 45]])
-(vec (range (+ 1 42) (+ 42 4)))
-;; => [43 44 45]
-(vec (range (+ 1 0) (+ 0 3)))
-;; => [1 2]
+(field-has-vert-space? 0N {:len 4} 59)
+(field-has-vert-space? 0N {:len 4} 60)
 
 (defn field-has-horiz-space? [field ship index]
   (let [ones (+ 1 (mod index 10))
         length (:len ship)]
-    (<= (+ length ones) 10)))
+    (and
+     (<= (+ length ones) 10)
+     ((field-has-space? 1) field ship index))))
+
+(field-has-horiz-space? 0N {:len 4} 15)
+(field-has-horiz-space? 0N {:len 4} 16)
 
 (defn add-ship-to-field [idx-inc]
   (fn [field length index]
@@ -97,13 +67,13 @@
 (inNout/base2str ((add-ship-to-field 10) 0 5 24))
 ;; => "0000000000000000000000001000000000100000000010000000001000000000100000000000000000000000000000000000"
 
-;; TODO - need to prevent overlapping on the rest of the ship placed after hd
+;; DONE - need to prevent overlapping on the rest of the ship placed after hd
 ;; Can to check those tail indexes as well and reject the head-index if it will overlap
 ;; Could be done in the has-space fn since those are specific to the direction of the ship
 (defn rand-place-ship [field ship has-space? add-ship]
   (loop [head-index (ai/find-empty-index (inNout/base2str field) (fn [x] x))
          tried []]
-    (if (has-space? ship head-index)
+    (if (has-space? field ship head-index)
       (add-ship field (:len ship) head-index)
       (recur (ai/find-empty-index (inNout/base2str field) (fn [x] x)) (conj tried head-index)))))
 
@@ -132,17 +102,7 @@
         (recur remaining-ships updated-field))))
 
 (starter-field-gen ships 0N)
-;; => 307009734795980207598398896156N
-;; => 151116909331478995318013952N
-;; => 19840909440981260712624980960N
-;; => 2556653909110643667329089536N
-;; => 18570311839390353789951148032N
-;; => 18972494311818954596382N
-;; => 20406989269628439257561433144N
-;; => 4957658397494955852599263232N
-;; => 79305609984180601440249577472N
-;; => 3545237005595209416760N
-;; => 39654017132390180260774150144N
+;; => 1248463134672511748071676182528N
 
 (defn place-ships
   "TODO - Randomly place ships on field, could use pre-generated fields"
