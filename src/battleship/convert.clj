@@ -16,8 +16,9 @@
 (defn input->coord
   "input->coord \"a 10\" -> [:a 10]
   Convert a valid user input string to a vector of coordinates.
-  TODO - This is where the user input of coordinates can be validated."
+  Invalid input throws an AssertionError"
   [input]
+  {:pre [(some? (re-matches #"^[a-j]\s[1-9][0]?$" input))]}
   (let  [[r c] (str/split input #" ")
          row (keyword r)
          column (Integer/parseInt c)]
@@ -35,25 +36,30 @@
                    (row row-m)
                    (get col-numbs column))))
 
+(coord->target :j 1)
+;; => 512N
+(coord->target :j 10)
+;; => 1N
+
 (def row-index {0 :a 10 :b 20 :c 30 :d 40 :e 50 :f 60 :g 70 :h 80 :i 90 :j})
 
 (defn index->coord
-  "takes a 0-99 index and creates the proper [:j 7] coordinate.
-   TODO - validate index is in range."
+  "Takes a 0-99 index and creates the proper [:j 7] vector coordinate.
+   Throws an AssertionError if index is out of range."
   [index]
+  {:pre [(< -1 index 100)]}
   (let [tens (* 10 (int (/ index 10)))
         row (get row-index tens)
         ones (+ 1 (int (mod index 10)))]
     [row ones]))
 
-(let [[r c] (index->coord 21)]
-  (coord->target r c))
-;; => 302231454903657293676544N
 
-(let [[r c] (index->coord 31)]
-  (coord->target r c))
-;; => 295147905179352825856N
+;; pass
+(re-matches #"^[a-j]\s[1-9][0]?$" "a 1")
+(re-matches #"^[a-j]\s[1-9][0]?$" "a 10")
+(re-matches #"^[a-j]\s[1-9][0]?$" "j 1")
 
-(let [[r c] (index->coord 41)]
-  (coord->target r c))
-;; => 288230376151711744N
+;; fail
+(re-matches #"^[a-j]\s[1-9][0]?$" "a 0")
+(re-matches #"^[a-j]\s[1-9][0]?$" "a 11")
+(re-matches #"^[a-j]\s[1-9][0]?$" "k 10")
