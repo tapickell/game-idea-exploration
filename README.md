@@ -1,14 +1,41 @@
 # battleship/battleship
 
-FIXME: my new application.
+## Experiment in different ideas to represent data in a simple application.
+This is a playground to explore in an application how to represent data using
+the basic language constructs in different ways. This idea came from a
+conversation with a colleague of mine about thinking outside the box and
+trying alternative data structures to see where they are useful and where
+they are not. Choosing a Battleship game is random, I just wanted something
+with a bit of complexity but not constrained to storing data in a DB. In some
+languages and frameworks the use of a DB and ORM can drive the data structures
+one chooses to use.
 
-## Installation
+* I would not recommend some of these ideas in a production application being
+worked on by a team. They do not all lend themselves to being readable and easy
+to reason about. This could lead to a buggy and hard to maintain codebase.
 
-Download from https://github.com/battleship/battleship
+### Binary Numbers
+  The first idea is to represent the playing field as a binary number instead
+  of using the typical nested array (vector in Clojure) approach.
+  This makes most functions that need to create, transform and reason about
+  the state of the field simple mathematical functions using `bit-and` and `+`
+  functions to return a new version of the state of the field.
 
-## Usage
+  A downside is not being able to debug and reason about such a data structure
+  representing the field. In the REPL if you output the number created from
+  a transformation function it is a BigInt. While 42N seems like a compact
+  way to represent the data, one is not able to look at this and tell what
+  rows and columns have relevant data and which don't. It needs to be
+  transformed again into a string representation of the number. Then it is
+  still not clear what rows or columns the data falls under. So it needs to
+  transformed again and output with row and column headers and line breaks.
 
-FIXME: explanation
+### Record only relevant data
+  This idea is to only record the relevant data as a vector of coordinates.
+  A field would be a vector with only the coordinates of where the ships are
+  placed, or where projectiles have landed. This would be a way simpler way
+  to reason about the data structures while building and debugging the code.
+  It also would not require a typical nested for loop construction.
 
 Run the project directly, via `:exec-fn`:
 
